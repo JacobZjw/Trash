@@ -1,0 +1,134 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+Server ..> ListenRequest
+
+ListenRequest ..> Message
+ListenRequest ..> User
+ListenRequest ..> Response
+ListenRequest ..> Request
+ListenRequest ..> Message
+ListenRequest ..> ClientIO
+
+DataBuffer <.. ListenRequest
+DataBuffer <.. Message
+DataBuffer <.. Server
+
+RequestType <.. ListenRequest
+RequestType <.. Request
+
+ResponseType <.. ListenRequest
+ResponseType <.. Response
+
+class Server{
+port : int
+Server()
+}
+
+class ListenRequest implements Callable{
+-socket :Socket
+-clientIO : ClientIO
+--
++ListenRequest(Socket socket)
+--
++call()
++login(Request request):void
++logout(Request request):void
++chat(Request request):void
++sendResponse(ClientIO userIo, Response response):void
++sendUsers():void
+}
+
+class ClientIO{
+-ois : ObjectInputStream
++oos : ObjectOutputStream
+--
++ClientIO(ObjectInputStream ois, ObjectOutputStream oos)
+--
++getOos() : ObjectOutputStream
++getOis() : ObjectInputStream
+}
+
+class DataBuffer{
++{static}serverSocket :ServerSocket
++{static}UserIOMap:Map<User, ClientIO>
++{static}currentUser:User
++{static}onlineUsersList : CopyOnWriteArrayList<User>
++{static}time : SimpleDateFormat
+}
+
+enum RequestType{
+CHAT
+LOGOUT
+LOGIN
+GET_USERS
+}
+enum ResponseType{
+OK
+LOGIN_REFUSED
+USER_LOGIN
+CHAT
+USER_LOGOUT
+UPDATE_USERS
+}
+
+
+class Message implements Serializable{
+- toUser : User
+- fromUser : User
+- message : String
+- sendTime : Date
+--
++Message()
++Message(String msg)
++Message(User toUser)
++Message(User toUser, String msg)
++Message(User fromUser, User toUser, String msg)
+--
++getToUser() : User
++setToUser(User toUser) : void
++getFromUser() : User
++setFromUser(User fromUser) : void
++getMessage() :String
++setMessage(String message) : void
++getSendTime() : Data
++setSendTime(Date sendTime) : void
+}
+class User implements Serializable {
+-userName : String
+--
++User(String userName) : void
+--
++getUserName() : String
++setUserName(String userName) : void
++equals(Object o) : boolean
++hashCode() : int
+}
+class Request implements Serializable{
+-type : RequestType
+-object : Object
+--
++Request()
++Request(RequestType type, Object object)
+--
++getObject() : Object
++setObject(Object object) : void
++getType() : RequestType
++setType(RequestType type) : void
+}
+
+class Response implements Serializable {
+-type : ResponseType
+-object : Object
+--
++Response()
++Response(ResponseType type, Object object)
+--
++getObject() : Object
++setObject(Object object) : void
++getType() : ResponseType
++setType(ResponseType type) : void
+}
+
+
+@enduml
